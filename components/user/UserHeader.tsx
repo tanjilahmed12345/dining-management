@@ -13,7 +13,8 @@ export function UserHeader({ currentUser }) {
       </div>
       <Link href="/" className="mt-4 md:mt-0">
         <Button className="bg-[#179295] hover:bg-[#0e7c7f] text-white border-none transition-colors">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
+          {/* <ArrowLeft className="h-4 w-4 mr-2" />  */}
+          Log Out
         </Button>
       </Link>
     </div>

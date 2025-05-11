@@ -16,7 +16,7 @@ export const signupSchema = z
 // User login schema
 export const loginSchema = z.object({
     email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(1, "Password is required"),
+    password: z.string().min(3, "Password is required"),
 })
 
 // Types derived from schemas

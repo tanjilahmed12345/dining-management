@@ -1,11 +1,10 @@
+import { getUserModel } from './../../../models/user';
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/helper/db";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { User } from "@/models/user";
+// import { User } from "@/models/user";
 import { z } from "zod";
-
-await connectDB();
 
 // Define Zod schema
 const registerSchema = z.object({
@@ -17,6 +16,7 @@ const registerSchema = z.object({
 // GET all users
 export async function GET() {
   try {
+    const User = await getUserModel();
     const users = await User.find();
     return NextResponse.json({ success: true, users }, { status: 200 });
   } catch (err) {
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
 
     const adminEmails = ["admin@gmail.com"];
     const role = adminEmails.includes(email) ? "admin" : "user";
+    const User = await getUserModel();
 
     const newUser = new User({
       username,
