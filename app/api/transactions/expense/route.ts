@@ -8,33 +8,32 @@ function getDateRange(period: string | null): { start: string; end: string } | n
   if (!period) return null;
 
   const now = new Date();
-  const end = now.toISOString().split("T")[0];
   let start: string;
 
   switch (period) {
     case "weekly": {
-      const weekAgo = new Date(now);
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      start = weekAgo.toISOString().split("T")[0];
+      const d = new Date(now);
+      d.setDate(d.getDate() - 7);
+      start = d.toISOString().split("T")[0];
       break;
     }
     case "monthly": {
-      const monthAgo = new Date(now);
-      monthAgo.setMonth(monthAgo.getMonth() - 1);
-      start = monthAgo.toISOString().split("T")[0];
+      const d = new Date(now);
+      d.setMonth(d.getMonth() - 1);
+      start = d.toISOString().split("T")[0];
       break;
     }
     case "yearly": {
-      const yearAgo = new Date(now);
-      yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-      start = yearAgo.toISOString().split("T")[0];
+      const d = new Date(now);
+      d.setFullYear(d.getFullYear() - 1);
+      start = d.toISOString().split("T")[0];
       break;
     }
     default:
       return null;
   }
 
-  return { start, end };
+  return { start, end: "9999-12-31" };
 }
 
 export async function GET(req: NextRequest) {

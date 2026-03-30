@@ -28,7 +28,12 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: bills });
+    const data = bills.map(({ user: u, ...rest }) => ({
+      ...rest,
+      userName: u?.username,
+    }));
+
+    return NextResponse.json({ success: true, data });
   } catch (err: unknown) {
     return NextResponse.json(
       { success: false, message: "Server Error", error: err instanceof Error ? err.message : "Unknown error" },
