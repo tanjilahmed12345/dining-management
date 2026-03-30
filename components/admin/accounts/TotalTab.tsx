@@ -7,7 +7,13 @@ import { TrendingDown, TrendingUp, Wallet } from "lucide-react"
 import { getUserById } from "@/lib/data"
 import { format } from "date-fns"
 
-export function TotalTab({ incomeData, expenseData, accountsPeriod, isCustomDateRange, customDateRange }) {
+export function TotalTab({ incomeData, expenseData, accountsPeriod, isCustomDateRange, customDateRange }: {
+  incomeData: import("@/lib/data").IncomeTransaction[]
+  expenseData: import("@/lib/data").ExpenseTransaction[]
+  accountsPeriod: string
+  isCustomDateRange: boolean
+  customDateRange: { startDate: Date; endDate: Date }
+}) {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

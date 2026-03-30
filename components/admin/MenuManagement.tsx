@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,14 +8,14 @@ import { Calendar, Edit, Plus, Trash } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Star } from "lucide-react"
-import { getAverageRatingForMenuItem } from "@/lib/data"
+import { getAverageRatingForMenuItem, type MenuItem } from "@/lib/data"
 import { MenuDialog } from "@/components/admin/dialogs/MenuDialog"
 import { MealScheduleDialog } from "@/components/admin/dialogs/MealScheduleDialog"
 import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
 // Simulating framer-motion for animations
-const MotionDiv = ({ children, ...props }) => {
+const MotionDiv = ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => {
   return (
     <div className="transition-all duration-500 ease-in-out" {...props}>
       {children}
@@ -23,10 +23,10 @@ const MotionDiv = ({ children, ...props }) => {
   )
 }
 
-export function MenuManagement({ menus, setMenus }) {
+export function MenuManagement({ menus, setMenus }: { menus: MenuItem[]; setMenus: React.Dispatch<React.SetStateAction<MenuItem[]>> }) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogType, setDialogType] = useState<"edit" | "new">("new")
-  const [editingMenu, setEditingMenu] = useState<any>(null)
+  const [editingMenu, setEditingMenu] = useState<MenuItem | null>(null)
   const [mealScheduleDialogOpen, setMealScheduleDialogOpen] = useState(false)
   const [newMenu, setNewMenu] = useState({
     name: "",
@@ -48,7 +48,7 @@ export function MenuManagement({ menus, setMenus }) {
   }
 
   // Handle menu edit
-  const handleEditMenu = (menu: any) => {
+  const handleEditMenu = (menu: MenuItem) => {
     setEditingMenu(menu)
     setDialogType("edit")
     setDialogOpen(true)

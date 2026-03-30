@@ -5,20 +5,12 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import axios from "axios";
 import { signupSchema, type SignupFormValues } from "@/lib/auth/schemas"
 import { useAuth } from "./AuthContext"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
-
-interface Data {
-    username: string;
-    email: string;
-    password: string;
-}
 
 export function SignupForm() {
     const { signup } = useAuth()
@@ -36,18 +28,9 @@ export function SignupForm() {
     })
 
     async function onSubmit(values: SignupFormValues) {
-
         setIsLoading(true)
         try {
-
-            console.log("Values: ", values);
-            const data: Data = {
-                username: values.username,
-                email: values.email,
-                password: values.password
-            };
-            const result = await axios.post("/api/users", data);
-            //await signup(values.name, values.email, values.password)
+            await signup(values.username, values.email, values.password)
             toast("You can now log in with your credentials.")
             router.push("/auth/login")
         } catch (error) {

@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, CheckCircle, DollarSign, Clock, Receipt } from "lucide-react"
 import { bills } from "@/lib/data"
-// import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-export function UserBilling({ currentUser }) {
+export function UserBilling({ currentUser }: { currentUser: import("@/lib/data").User }) {
   // Get user's bill
   const userBill = bills.find((b) => b.userId === currentUser.id)
 
@@ -38,7 +38,7 @@ export function UserBilling({ currentUser }) {
   ]
 
   // Format date for display
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -100,10 +100,7 @@ export function UserBilling({ currentUser }) {
                   <Button
                     className="bg-teal-600 hover:bg-teal-700 transition-all duration-300 transform hover:scale-105"
                     onClick={() => {
-                      toast({
-                        title: "Payment Initiated",
-                        description: "You will be redirected to the payment gateway.",
-                      })
+                      toast("Payment Initiated - You will be redirected to the payment gateway.")
                     }}
                   >
                     Pay Now
@@ -147,10 +144,7 @@ export function UserBilling({ currentUser }) {
                             size="sm"
                             className="text-teal-400 hover:text-teal-300 hover:bg-gray-700/50"
                             onClick={() => {
-                              toast({
-                                title: "Receipt Downloaded",
-                                description: `Receipt for payment on ${formatDate(payment.date)} has been downloaded.`,
-                              })
+                              toast(`Receipt for payment on ${formatDate(payment.date)} has been downloaded.`)
                             }}
                           >
                             <Receipt className="h-4 w-4 mr-1" /> Download

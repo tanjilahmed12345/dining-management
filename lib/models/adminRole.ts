@@ -1,7 +1,5 @@
-// models/adminRole.ts (model setup)
-import { connectDB } from "@/helper/db";
+import { connectDB } from "@/lib/db";
 import mongoose, { Schema, model } from "mongoose";
-// import connectDB from "../lib/db";
 
 type AdminRoleType = {
     email: string;
@@ -21,7 +19,6 @@ const AdminRoleSchema = new Schema<AdminRoleType>({
     },
 });
 
-// Get connected model
 const getAdminRoleModel = async () => {
     await connectDB();
     return (

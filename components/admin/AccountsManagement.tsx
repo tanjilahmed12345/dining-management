@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import type { IncomeTransaction, ExpenseTransaction } from "@/lib/data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart, CreditCard, DollarSign, Download, Filter, Plus } from "lucide-react"
@@ -24,12 +25,12 @@ import { toast } from "sonner"
 
 export function AccountsManagement() {
   const [accountsTab, setAccountsTab] = useState("receive")
-  const [accountsPeriod, setAccountsPeriod] = useState("monthly")
-  const [incomeData, setIncomeData] = useState([])
-  const [expenseData, setExpenseData] = useState([])
+  const [accountsPeriod, setAccountsPeriod] = useState<"weekly" | "monthly" | "yearly">("monthly")
+  const [incomeData, setIncomeData] = useState<IncomeTransaction[]>([])
+  const [expenseData, setExpenseData] = useState<ExpenseTransaction[]>([])
   const [incomeDialogOpen, setIncomeDialogOpen] = useState(false)
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false)
-  const [customDateRange, setCustomDateRange] = useState({
+  const [customDateRange] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date(),
   })
@@ -98,8 +99,8 @@ export function AccountsManagement() {
                   <span className="text-gray-300 font-medium">Filter by:</span>
                   <Select
                     value={accountsPeriod}
-                    onValueChange={(value) => {
-                      setAccountsPeriod(value)
+                    onValueChange={(value: string) => {
+                      setAccountsPeriod(value as "weekly" | "monthly" | "yearly")
                       setIsCustomDateRange(value === "custom")
                     }}
                   >

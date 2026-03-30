@@ -2,134 +2,123 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import type { User, UserRole } from "@/lib/auth/schemas"
+import type { UserRole } from "@/lib/auth/schemas"
+import axios from "axios"
+
+interface AuthUser {
+  username: string
+  email: string
+  role: UserRole
+}
 
 interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<User>
-  signup: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
+  user: AuthUser | null
+  login: (email: string, password: string) => Promise<AuthUser>
+  signup: (username: string, email: string, password: string) => Promise<void>
+  logout: () => Promise<void>
   setRole: (role: UserRole) => void
-  loading: boolean
+  selectedRole: UserRole | null
+  isLoading: boolean
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  // Check for existing session on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // In a real app, this would validate the token with your backend
-        const token = localStorage.getItem("auth_token")
-        if (token) {
-          // Mock decoding the token to get user info
-          // In a real app, you'd verify this token with your backend
-          const userData = JSON.parse(localStorage.getItem("user_data") || "{}")
-          if (userData && userData.id) {
-            setUser(userData)
-          }
+    try {
+      const userData = localStorage.getItem("user_data")
+      if (userData) {
+        const parsed = JSON.parse(userData)
+        if (parsed && parsed.email) {
+          setUser(parsed)
         }
-      } catch (error) {
-        console.error("Auth check failed:", error)
-        localStorage.removeItem("auth_token")
-        localStorage.removeItem("user_data")
-      } finally {
-        setLoading(false)
       }
+      const savedRole = localStorage.getItem("selected_role") as UserRole | null
+      if (savedRole) {
+        setSelectedRole(savedRole)
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error)
+      localStorage.removeItem("user_data")
+      localStorage.removeItem("selected_role")
+    } finally {
+      setIsLoading(false)
     }
-
-    checkAuth()
   }, [])
 
-  const login = async (email: string, password: string): Promise<User> => {
-    setLoading(true)
+  const login = async (email: string, password: string): Promise<AuthUser> => {
+    setIsLoading(true)
     try {
-      // In a real app, this would be an API call to your backend
-      // Mock login for demonstration
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await axios.post("/api/login", { email, password })
+      const { user: userData } = response.data
 
-      // Check credentials (mock)
-      if (email === "admin@example.com" && password === "password") {
-        const userData: User = {
-          id: "1",
-          name: "Admin User",
-          email: "admin@example.com",
-          role: "admin",
-        }
-
-        // Store auth data
-        localStorage.setItem("auth_token", "mock_jwt_token")
-        localStorage.setItem("user_data", JSON.stringify(userData))
-
-        setUser(userData)
-        return userData
-      } else if (email === "user@example.com" && password === "password") {
-        const userData: User = {
-          id: "2",
-          name: "Regular User",
-          email: "user@example.com",
-          role: "user",
-        }
-
-        // Store auth data
-        localStorage.setItem("auth_token", "mock_jwt_token")
-        localStorage.setItem("user_data", JSON.stringify(userData))
-
-        setUser(userData)
-        return userData
-      } else {
-        throw new Error("Invalid credentials")
+      const authUser: AuthUser = {
+        username: userData.username,
+        email: userData.email,
+        role: userData.role,
       }
+
+      localStorage.setItem("user_data", JSON.stringify(authUser))
+      setUser(authUser)
+      return authUser
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const signup = async (name: string, email: string, password: string): Promise<void> => {
-    setLoading(true)
+  const signup = async (username: string, email: string, password: string): Promise<void> => {
+    setIsLoading(true)
     try {
-      // In a real app, this would be an API call to your backend
-      // Mock signup for demonstration
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Check if email already exists (mock)
-      if (email === "admin@example.com" || email === "user@example.com") {
-        throw new Error("Email already in use")
-      }
-
-      // Success - in a real app, the user would be created in your database
-      return
+      await axios.post("/api/users", { username, email, password })
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem("auth_token")
+  const logout = async () => {
+    try {
+      await axios.post("/api/logout")
+    } catch (error) {
+      console.error("Logout API error:", error)
+    }
     localStorage.removeItem("user_data")
     localStorage.removeItem("selected_role")
     setUser(null)
+    setSelectedRole(null)
     router.push("/auth/login")
   }
 
   const setRole = (role: UserRole) => {
-    if (user && user.role === "admin") {
-      localStorage.setItem("selected_role", role)
-      if (role === "admin") {
-        router.push("/admin/dashboard")
-      } else {
-        router.push("/user/dashboard")
-      }
+    setSelectedRole(role)
+    localStorage.setItem("selected_role", role)
+    if (role === "admin") {
+      router.push("/admin/dashboard")
+    } else {
+      router.push("/user/dashboard")
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, setRole, loading }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        signup,
+        logout,
+        setRole,
+        selectedRole,
+        isLoading,
+        isAuthenticated: !!user,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   )
 }
 

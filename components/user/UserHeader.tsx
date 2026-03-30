@@ -2,9 +2,8 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
 
-export function UserHeader({ currentUser }) {
+export function UserHeader({ currentUser }: { currentUser: import("@/lib/data").User }) {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
       <div>

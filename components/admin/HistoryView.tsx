@@ -11,7 +11,7 @@ import { toast } from "sonner"
 
 // import { toast } from "@/components/ui/use-toast"
 
-export function HistoryView({ menus }) {
+export function HistoryView({ menus }: { menus: { id: string; name: string; date: string; dayOfWeek?: string; mealType?: string; active?: boolean }[] }) {
   const [historyPeriod, setHistoryPeriod] = useState("weekly")
 
   // Format date for display
@@ -25,7 +25,7 @@ export function HistoryView({ menus }) {
   }
 
   // Download confirmed users list as PDF
-  const downloadConfirmedUsers = (date: string) => {
+  const downloadConfirmedUsers = () => {
     toast("The participant list has been downloaded as a PDF.")
   }
 
@@ -201,7 +201,7 @@ export function HistoryView({ menus }) {
                           variant="outline"
                           size="sm"
                           className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                          onClick={() => downloadConfirmedUsers(menu.date)}
+                          onClick={() => downloadConfirmedUsers()}
                         >
                           <Download className="h-3 w-3 mr-1" /> Download PDF
                         </Button>

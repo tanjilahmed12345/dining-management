@@ -16,6 +16,8 @@ import { Save } from "lucide-react"
 import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
+import type { MenuItem } from "@/lib/data"
+
 export function MenuDialog({
   open,
   onOpenChange,
@@ -25,6 +27,15 @@ export function MenuDialog({
   newMenu,
   setNewMenu,
   setMenus,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  dialogType: "edit" | "new"
+  editingMenu: MenuItem | null
+  setEditingMenu: React.Dispatch<React.SetStateAction<MenuItem | null>>
+  newMenu: { name: string; description: string; date: string; dayOfWeek: string; mealType: string; active: boolean }
+  setNewMenu: React.Dispatch<React.SetStateAction<{ name: string; description: string; date: string; dayOfWeek: string; mealType: string; active: boolean }>>
+  setMenus: React.Dispatch<React.SetStateAction<MenuItem[]>>
 }) {
   // Save menu changes
   const saveMenuChanges = () => {
@@ -71,7 +82,7 @@ export function MenuDialog({
               id="menu-name"
               value={dialogType === "edit" ? editingMenu?.name : newMenu.name}
               onChange={(e) =>
-                dialogType === "edit"
+                dialogType === "edit" && editingMenu
                   ? setEditingMenu({ ...editingMenu, name: e.target.value })
                   : setNewMenu({ ...newMenu, name: e.target.value })
               }
@@ -88,7 +99,7 @@ export function MenuDialog({
               value={dialogType === "edit" ? editingMenu?.date : newMenu.date}
               onChange={(e) =>
                 dialogType === "edit"
-                  ? setEditingMenu({ ...editingMenu, date: e.target.value })
+                  ? editingMenu && setEditingMenu({ ...editingMenu, date: e.target.value })
                   : setNewMenu({ ...newMenu, date: e.target.value })
               }
               className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
@@ -103,7 +114,7 @@ export function MenuDialog({
               value={dialogType === "edit" ? editingMenu?.description : newMenu.description}
               onChange={(e) =>
                 dialogType === "edit"
-                  ? setEditingMenu({ ...editingMenu, description: e.target.value })
+                  ? editingMenu && setEditingMenu({ ...editingMenu, description: e.target.value })
                   : setNewMenu({ ...newMenu, description: e.target.value })
               }
               className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
@@ -119,7 +130,7 @@ export function MenuDialog({
                 checked={dialogType === "edit" ? editingMenu?.active !== false : newMenu.active !== false}
                 onCheckedChange={(checked) =>
                   dialogType === "edit"
-                    ? setEditingMenu({ ...editingMenu, active: checked })
+                    ? editingMenu && setEditingMenu({ ...editingMenu, active: checked })
                     : setNewMenu({ ...newMenu, active: checked })
                 }
               />

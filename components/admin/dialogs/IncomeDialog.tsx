@@ -18,7 +18,11 @@ import { users, getUserById } from "@/lib/data"
 import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
-export function IncomeDialog({ open, onOpenChange, setIncomeData }) {
+export function IncomeDialog({ open, onOpenChange, setIncomeData }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  setIncomeData: React.Dispatch<React.SetStateAction<import("@/lib/data").IncomeTransaction[]>>
+}) {
   const [newIncomeTransaction, setNewIncomeTransaction] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
@@ -119,7 +123,7 @@ export function IncomeDialog({ open, onOpenChange, setIncomeData }) {
               type="number"
               placeholder="0.00"
               value={newIncomeTransaction.amount}
-              onChange={(e) => setNewIncomeTransaction({ ...newIncomeTransaction, amount: e.target.value })}
+              onChange={(e) => setNewIncomeTransaction({ ...newIncomeTransaction, amount: Number(e.target.value) })}
               className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
             />
           </div>

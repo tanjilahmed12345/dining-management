@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
 export default function RoleSelectionPage() {
-  const { user, setRole, loading } = useAuth()
+  const { user, setRole, isLoading: loading } = useAuth()
   const router = useRouter()
 
   // Redirect if user is not admin or already loaded
@@ -35,7 +35,7 @@ export default function RoleSelectionPage() {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <div className="space-y-4">
             <p className="text-center text-sm text-gray-600">
-              Welcome, {user?.name}. Please select how you would like to access the system.
+              Welcome, {user?.username}. Please select how you would like to access the system.
             </p>
 
             <div className="grid grid-cols-2 gap-4">

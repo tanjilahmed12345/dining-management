@@ -17,7 +17,11 @@ import { Save } from "lucide-react"
 import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
-export function ExpenseDialog({ open, onOpenChange, setExpenseData }) {
+export function ExpenseDialog({ open, onOpenChange, setExpenseData }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  setExpenseData: React.Dispatch<React.SetStateAction<import("@/lib/data").ExpenseTransaction[]>>
+}) {
   const [newExpenseTransaction, setNewExpenseTransaction] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
@@ -118,7 +122,7 @@ export function ExpenseDialog({ open, onOpenChange, setExpenseData }) {
               type="number"
               placeholder="0.00"
               value={newExpenseTransaction.amount}
-              onChange={(e) => setNewExpenseTransaction({ ...newExpenseTransaction, amount: e.target.value })}
+              onChange={(e) => setNewExpenseTransaction({ ...newExpenseTransaction, amount: Number(e.target.value) })}
               className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
             />
           </div>

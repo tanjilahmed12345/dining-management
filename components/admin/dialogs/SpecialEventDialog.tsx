@@ -17,7 +17,7 @@ import { Save } from "lucide-react"
 import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
-export function SpecialEventDialog({ open, onOpenChange }) {
+export function SpecialEventDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-700">

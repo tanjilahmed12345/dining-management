@@ -1,5 +1,6 @@
-import { Save } from 'lucide-react';
-import getAdminRoleModel from "@/models/adminRole";
+"use server";
+
+import getAdminRoleModel from "@/lib/models/adminRole";
 
 interface Data {
     username: string;
@@ -26,7 +27,7 @@ export async function setAdminCurrentRole(data: Data) {
             message: "Added admin current role",
         };
     }
-    catch (err) {
+    catch {
         return { success: false, message: "Something Wrong!!" }
     }
 
@@ -51,7 +52,7 @@ export async function deleteAdminCurrentRole(data: Data) {
             message: "Deleted admin current role",
         };
     }
-    catch (err) {
+    catch {
         return { success: false, message: "Something Wrong!!" }
     }
 

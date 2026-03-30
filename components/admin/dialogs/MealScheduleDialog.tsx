@@ -17,8 +17,12 @@ import { Save } from "lucide-react"
 import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
-export function MealScheduleDialog({ open, onOpenChange, setMenus }) {
-  const [mealSchedule, setMealSchedule] = useState({
+export function MealScheduleDialog({ open, onOpenChange, setMenus }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  setMenus: React.Dispatch<React.SetStateAction<import("@/lib/data").MenuItem[]>>
+}) {
+  const [mealSchedule, setMealSchedule] = useState<Record<string, string>>({
     Monday: "Chicken Roast",
     Tuesday: "Mutton",
     Wednesday: "Beef",

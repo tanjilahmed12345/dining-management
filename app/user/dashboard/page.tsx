@@ -52,7 +52,7 @@ export default function UserDashboard() {
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">
-            <UserHistory currentUser={currentUser} userConfirmations={userConfirmations} />
+            <UserHistory userConfirmations={userConfirmations} />
           </TabsContent>
 
           <TabsContent value="billing" className="mt-6">

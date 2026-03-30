@@ -1,15 +1,10 @@
-import { connectDB } from "@/helper/db";
-import { getUserModel } from "@/models/user";
-// import { User } from "@/models/user";
+import { getUserModel } from "@/lib/models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
-await connectDB();
-
-// Define Zod schema
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(3),
@@ -19,7 +14,6 @@ export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
 
-    // Validate using zod
     const { email, password } = loginSchema.parse(body);
 
     const User = await getUserModel();
@@ -41,29 +35,36 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined in environment variables");
+    }
+
     const token = jwt.sign(
       { id: user._id, email: user.email },
-      "ji2b3on1e45on8ek6@ma43ra" as string,
+      process.env.JWT_SECRET,
       { expiresIn: "3d" }
     );
 
     const response = NextResponse.json(
-      { success: true, message: "Logged in successfully", user:{email:user.email, username: user.username, role: user.role} },
+      {
+        success: true,
+        message: "Logged in successfully",
+        user: { email: user.email, username: user.username, role: user.role },
+      },
       { status: 200 }
     );
 
     response.cookies.set("token", token, {
       httpOnly: true,
       sameSite: "strict",
-      path: "/", 
-      maxAge: 60 * 60 * 24 * 3, // 3 days
+      path: "/",
+      maxAge: 60 * 60 * 24 * 3,
     });
 
     return response;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
 
-    // Handle Zod validation error separately
     if (err instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, message: "Invalid input data", errors: err.errors },
@@ -72,7 +73,7 @@ export const POST = async (req: NextRequest) => {
     }
 
     return NextResponse.json(
-      { success: false, message: "Server Error", error: err.message },
+      { success: false, message: "Server Error", error: err instanceof Error ? err.message : "Unknown error" },
       { status: 500 }
     );
   }

@@ -1,17 +1,16 @@
 "use client"
 
+import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Download, Users } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getConfirmedUsersByDate } from "@/lib/data"
+import { getConfirmedUsersByDate, type MenuItem } from "@/lib/data"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
 
-// Simulating framer-motion for animations
-const MotionDiv = ({ children, ...props }) => {
+const MotionDiv = ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => {
   return (
     <div className="transition-all duration-500 ease-in-out" {...props}>
       {children}
@@ -19,7 +18,7 @@ const MotionDiv = ({ children, ...props }) => {
   )
 }
 
-export function ParticipantsManagement({ menus }) {
+export function ParticipantsManagement({ menus }: { menus: MenuItem[] }) {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

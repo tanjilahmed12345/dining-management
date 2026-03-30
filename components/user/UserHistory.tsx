@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,7 +12,7 @@ import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
 // Simulating framer-motion for animations
-const MotionDiv = ({ children, ...props }) => {
+const MotionDiv = ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => {
   return (
     <div className="transition-all duration-500 ease-in-out" {...props}>
       {children}
@@ -20,9 +20,9 @@ const MotionDiv = ({ children, ...props }) => {
   )
 }
 
-export function UserHistory({ currentUser, userConfirmations }) {
-  const [mealRatings, setMealRatings] = useState({})
-  const [feedback, setFeedback] = useState({})
+export function UserHistory({ userConfirmations }: { userConfirmations: import("@/lib/data").Confirmation[] }) {
+  const [mealRatings, setMealRatings] = useState<Record<string, number>>({})
+  const [feedback, setFeedback] = useState<Record<string, string>>({})
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -35,7 +35,7 @@ export function UserHistory({ currentUser, userConfirmations }) {
   }
 
   // Check if a date is current or past
-  const isCurrentOrPastDate = (dateString) => {
+  const isCurrentOrPastDate = (dateString: string) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const itemDate = new Date(dateString)
@@ -43,7 +43,7 @@ export function UserHistory({ currentUser, userConfirmations }) {
   }
 
   // Handle rating change
-  const handleRatingChange = (menuItemId, rating) => {
+  const handleRatingChange = (menuItemId: string, rating: number) => {
     setMealRatings({
       ...mealRatings,
       [menuItemId]: rating,
@@ -51,7 +51,7 @@ export function UserHistory({ currentUser, userConfirmations }) {
   }
 
   // Handle feedback change
-  const handleFeedbackChange = (menuItemId, value) => {
+  const handleFeedbackChange = (menuItemId: string, value: string) => {
     setFeedback({
       ...feedback,
       [menuItemId]: value,
@@ -59,7 +59,7 @@ export function UserHistory({ currentUser, userConfirmations }) {
   }
 
   // Submit rating and feedback
-  const submitFeedback = (menuItemId) => {
+  const submitFeedback = (menuItemId: string) => {
     // In a real app, this would send data to the server
     toast( `Thank you for your feedback! Your rating: ${mealRatings[menuItemId] || 0}/5`,
     )

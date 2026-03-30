@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PieChart, TrendingDown, Wallet } from "lucide-react"
 
-export function SpendTab({ expenseData }) {
+export function SpendTab({ expenseData }: { expenseData: import("@/lib/data").ExpenseTransaction[] }) {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

@@ -54,7 +54,7 @@ export function SpecialEvents() {
                 </div>
               </div>
               <p className="text-gray-300 mb-4">
-                Special catered lunch to celebrate our company's 5th anniversary. Premium menu with multiple options.
+                Special catered lunch to celebrate our company&apos;s 5th anniversary. Premium menu with multiple options.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Badge className="bg-gray-700 text-gray-300 border-gray-600">Catering</Badge>

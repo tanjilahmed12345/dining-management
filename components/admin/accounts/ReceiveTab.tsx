@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TrendingUp, Users, Wallet } from "lucide-react"
 import { getUserById } from "@/lib/data"
 
-export function ReceiveTab({ incomeData }) {
+export function ReceiveTab({ incomeData }: { incomeData: import("@/lib/data").IncomeTransaction[] }) {
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

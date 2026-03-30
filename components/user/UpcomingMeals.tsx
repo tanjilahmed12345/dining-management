@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +10,7 @@ import { toast } from "sonner"
 // import { toast } from "@/components/ui/use-toast"
 
 // Simulating framer-motion for animations
-const MotionDiv = ({ children, ...props }) => {
+const MotionDiv = ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => {
   return (
     <div className="transition-all duration-500 ease-in-out" {...props}>
       {children}
@@ -18,9 +18,13 @@ const MotionDiv = ({ children, ...props }) => {
   )
 }
 
-export function UpcomingMeals({ currentUser, userConfirmations, setUserConfirmations }) {
+export function UpcomingMeals({ currentUser, userConfirmations, setUserConfirmations }: {
+  currentUser: import("@/lib/data").User
+  userConfirmations: import("@/lib/data").Confirmation[]
+  setUserConfirmations: React.Dispatch<React.SetStateAction<import("@/lib/data").Confirmation[]>>
+}) {
   // Animation for cards
-  const [animatedItems, setAnimatedItems] = useState([])
+  const [animatedItems, setAnimatedItems] = useState<string[]>([])
 
   useEffect(() => {
     // Simulate staggered animation by adding items one by one

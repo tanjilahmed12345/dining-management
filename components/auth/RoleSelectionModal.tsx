@@ -1,11 +1,10 @@
 "use client"
 
-import { useAuth } from "./AuthContext"
 import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useAtom } from "jotai"
-import { currentUserAtom } from "@/store/authSlice"
+import { currentUserAtom } from "@/lib/atoms/auth"
 import { setAdminCurrentRole } from "@/app/actions/admin.action"
 
 
