@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { IncomeTransaction, ExpenseTransaction } from "@/lib/types";
+import api from "@/lib/api/client";
 
 export function useIncomeTransactions(period: "weekly" | "monthly" | "yearly" = "monthly") {
   const [transactions, setTransactions] = useState<IncomeTransaction[]>([]);
@@ -12,14 +13,13 @@ export function useIncomeTransactions(period: "weekly" | "monthly" | "yearly" = 
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with API call
-      setTransactions([]);
+      const res = await api.get(`/api/transactions/income?period=${period}`);
+      setTransactions(res.data.data ?? []);
     } catch {
       setError("Failed to load income data");
     } finally {
       setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
@@ -36,14 +36,13 @@ export function useExpenseTransactions(period: "weekly" | "monthly" | "yearly" =
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with API call
-      setTransactions([]);
+      const res = await api.get(`/api/transactions/expense?period=${period}`);
+      setTransactions(res.data.data ?? []);
     } catch {
       setError("Failed to load expense data");
     } finally {
       setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   useEffect(() => { fetchTransactions(); }, [fetchTransactions]);

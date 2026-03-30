@@ -36,7 +36,7 @@ export function LoginForm() {
       const user = await login(data.email, data.password)
       toast.success("Welcome back!")
       setLogin(true)
-      setCurrentUser({ username: user.username, email: user.email, role: user.role })
+      setCurrentUser({ id: user.id, username: user.username, email: user.email, role: user.role })
 
       if (user.role === "admin") {
         setShowRoleModal(true)

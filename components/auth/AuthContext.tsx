@@ -6,6 +6,7 @@ import type { UserRole } from "@/lib/auth/schemas"
 import axios from "axios"
 
 interface AuthUser {
+  id: string
   username: string
   email: string
   role: UserRole
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { user: userData } = response.data
 
       const authUser: AuthUser = {
+        id: userData.id,
         username: userData.username,
         email: userData.email,
         role: userData.role,

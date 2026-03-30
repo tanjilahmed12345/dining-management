@@ -7,10 +7,20 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── Enums ───────────────────────────────────────────────
+
 enum Role {
   admin
   user
 }
+
+enum EventStatus {
+  upcoming
+  ongoing
+  completed
+}
+
+// ─── Auth & Roles ────────────────────────────────────────
 
 model User {
   id        String   @id @default(uuid())
@@ -20,6 +30,11 @@ model User {
   role      Role     @default(user)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  confirmations      Confirmation[]
+  bills              Bill[]
+  ratings            MealRating[]
+  incomeTransactions IncomeTransaction[]
 
   @@map("users")
 }
@@ -32,4 +47,135 @@ model AdminRole {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("admin_roles")
+}
+
+// ─── Menu & Meals ────────────────────────────────────────
+
+model MenuItem {
+  id          String   @id @default(uuid())
+  name        String
+  description String   @default("")
+  date        String
+  dayOfWeek   String   @map("day_of_week")
+  mealType    String   @map("meal_type")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  confirmations Confirmation[]
+  ratings       MealRating[]
+
+  @@map("menu_items")
+}
+
+model Confirmation {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  menuItemId    String   @map("menu_item_id")
+  date          String
+  confirmed     Boolean  @default(false)
+  adminApproval Boolean  @default(false) @map("admin_approval")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuItemId])
+  @@map("confirmations")
+}
+
+model MealRating {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  menuItemId String   @map("menu_item_id")
+  rating     Int
+  feedback   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuItemId])
+  @@map("meal_ratings")
+}
+
+// ─── Billing ─────────────────────────────────────────────
+
+model Bill {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  month     String
+  year      String
+  amount    Float    @default(0)
+  paid      Boolean  @default(false)
+  mealCount Int      @default(0) @map("meal_count")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments PaymentRecord[]
+
+  @@unique([userId, month, year])
+  @@map("bills")
+}
+
+model PaymentRecord {
+  id        String   @id @default(uuid())
+  billId    String   @map("bill_id")
+  date      String
+  amount    Float
+  method    String
+  status    String   @default("Completed")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@map("payment_records")
+}
+
+// ─── Accounts / Finance ──────────────────────────────────
+
+model IncomeTransaction {
+  id            String   @id @default(uuid())
+  date          String
+  description   String
+  userId        String   @map("user_id")
+  amount        Float
+  paymentMethod String?  @map("payment_method")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("income_transactions")
+}
+
+model ExpenseTransaction {
+  id            String   @id @default(uuid())
+  date          String
+  description   String
+  amount        Float
+  category      String?
+  paymentMethod String?  @map("payment_method")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("expense_transactions")
+}
+
+// ─── Special Events ──────────────────────────────────────
+
+model SpecialEvent {
+  id             String      @id @default(uuid())
+  name           String
+  date           String
+  type           String
+  description    String      @default("")
+  status         EventStatus @default(upcoming)
+  tags           String[]    @default([])
+  confirmedCount Int         @default(0) @map("confirmed_count")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  @@map("special_events")
 }

@@ -30,8 +30,9 @@ export function SignupForm() {
             await signup(values.username, values.email, values.password)
             toast.success("Account created! You can now log in.")
             router.push("/auth/login")
-        } catch {
-            toast.error("Something went wrong. Please try again.")
+        } catch (err: unknown) {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+            toast.error(message || "Something went wrong. Please try again.")
         } finally {
             setIsLoading(false)
         }

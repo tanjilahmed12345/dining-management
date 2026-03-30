@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { Confirmation } from "@/lib/types";
+import api from "@/lib/api/client";
 
 export function useParticipants(date?: string) {
   const [participants, setParticipants] = useState<Confirmation[]>([]);
@@ -9,17 +10,17 @@ export function useParticipants(date?: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchParticipants = useCallback(async () => {
+    if (!date) { setIsLoading(false); return; }
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with API call
-      setParticipants([]);
+      const res = await api.get(`/api/confirmations?date=${date}`);
+      setParticipants(res.data.data ?? []);
     } catch {
       setError("Failed to load participants");
     } finally {
       setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   useEffect(() => { fetchParticipants(); }, [fetchParticipants]);

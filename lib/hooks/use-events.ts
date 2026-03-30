@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { SpecialEvent } from "@/lib/types";
+import api from "@/lib/api/client";
 
 export function useSpecialEvents() {
   const [events, setEvents] = useState<SpecialEvent[]>([]);
@@ -12,8 +13,8 @@ export function useSpecialEvents() {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with API call
-      setEvents([]);
+      const res = await api.get("/api/special-events");
+      setEvents(res.data.data ?? []);
     } catch {
       setError("Failed to load events");
     } finally {

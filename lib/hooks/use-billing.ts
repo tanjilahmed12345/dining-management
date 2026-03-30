@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { Bill, PaymentRecord } from "@/lib/types";
+import api from "@/lib/api/client";
 
 export function useBills() {
   const [bills, setBills] = useState<Bill[]>([]);
@@ -12,8 +13,8 @@ export function useBills() {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with API call
-      setBills([]);
+      const res = await api.get("/api/bills");
+      setBills(res.data.data ?? []);
     } catch {
       setError("Failed to load billing data");
     } finally {
@@ -33,13 +34,20 @@ export function useUserBill(userId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchBill = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) { setIsLoading(false); return; }
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with API call
-      setBill(null);
-      setPayments([]);
+      const res = await api.get(`/api/bills?userId=${userId}`);
+      const bills: Bill[] = res.data.data ?? [];
+      if (bills.length > 0) {
+        setBill(bills[0]);
+        const payRes = await api.get(`/api/bills/${bills[0].id}/payments`);
+        setPayments(payRes.data.data ?? []);
+      } else {
+        setBill(null);
+        setPayments([]);
+      }
     } catch {
       setError("Failed to load bill");
     } finally {

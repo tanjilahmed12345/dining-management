@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { MenuItem } from "@/lib/types";
+import api from "@/lib/api/client";
 
 export function useMenus() {
   const [menus, setMenus] = useState<MenuItem[]>([]);
@@ -12,8 +13,8 @@ export function useMenus() {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with API call — const res = await api.get("/api/menus");
-      setMenus([]);
+      const res = await api.get("/api/menus");
+      setMenus(res.data.data ?? []);
     } catch {
       setError("Failed to load menus");
     } finally {

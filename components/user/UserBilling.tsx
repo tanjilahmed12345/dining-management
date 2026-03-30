@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Calendar, CheckCircle, DollarSign, Clock, Receipt } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useUserBill } from "@/lib/hooks/use-billing"
+import { useAuth } from "@/components/auth/AuthContext"
 import { StatCardSkeleton, TableSkeleton } from "@/components/ui/loading-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
 import { formatDate, formatCurrency } from "@/lib/utils"
 import { toast } from "sonner"
 
 export function UserBilling() {
-  const { bill, payments, isLoading } = useUserBill("current")
+  const { user } = useAuth()
+  const { bill, payments, isLoading } = useUserBill(user?.id)
 
   if (isLoading) {
     return (
