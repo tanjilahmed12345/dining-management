@@ -1,4 +1,4 @@
-import { getUserModel } from "@/lib/models/user";
+import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -8,12 +8,21 @@ const registerSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters long"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(3, "Password must be at least 3 characters"),
+  role: z.enum(["admin", "user"]).optional(),
 });
 
+// GET - fetch all users
 export async function GET() {
   try {
-    const User = await getUserModel();
-    const users = await User.find();
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
     return NextResponse.json({ success: true, users }, { status: 200 });
   } catch {
     return NextResponse.json(
@@ -23,38 +32,40 @@ export async function GET() {
   }
 }
 
+// POST - register a new user
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const { username, email, password, role } = registerSchema.parse(body);
 
-    const { username, email, password } = registerSchema.parse(body);
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, message: "User with this email already exists" },
+        { status: 409 }
+      );
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const adminEmails = ["admin@gmail.com"];
-    const role = adminEmails.includes(email) ? "admin" : "user";
-    const User = await getUserModel();
-
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-      role,
+    await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+        role: role || "user",
+      },
     });
 
-    await newUser.save();
-
     return NextResponse.json(
-      {
-        success: true,
-        message: "User created successfully!",
-      },
+      { success: true, message: "User created successfully!" },
       { status: 201 }
     );
   } catch (err: unknown) {
-    console.log(err);
-
     if (err instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, message: "Invalid input data", errors: err.errors },

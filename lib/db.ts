@@ -1,21 +1,16 @@
-import mongoose from "mongoose";
+import { PrismaClient } from "@/lib/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-export async function connectDB() {
-    if (mongoose.connection.readyState >= 1) return;
+const globalForPrisma = globalThis as typeof globalThis & {
+  prisma?: PrismaClient;
+};
 
-    if (!process.env.MONGODB_URI) {
-        throw new Error("MONGODB_URI is not defined in environment variables");
-    }
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+  });
 
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            dbName: process.env.MONGODB_DB_NAME || "diningManagement",
-            retryWrites: true,
-            w: "majority",
-        });
-        console.log("Connected to Database.");
-    } catch (err) {
-        console.log("Database connection error:", err);
-        throw err;
-    }
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
 }

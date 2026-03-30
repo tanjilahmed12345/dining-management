@@ -1,6 +1,6 @@
 "use server";
 
-import getAdminRoleModel from "@/lib/models/adminRole";
+import { prisma } from "@/lib/db";
 
 interface Data {
     username: string;
@@ -8,52 +8,37 @@ interface Data {
     role: string;
 }
 
-
 export async function setAdminCurrentRole(data: Data) {
-
     try {
-        const AdminRole = await getAdminRoleModel();
-        const newAdminRole = new AdminRole({
-            email: data.email,
-            currentRole: data.role,
-        })
-
-        console.log(data,newAdminRole);
-
-        await newAdminRole.save();
+        await prisma.adminRole.upsert({
+            where: { email: data.email },
+            update: { currentRole: data.role === "admin" ? "admin" : "user" },
+            create: {
+                email: data.email,
+                currentRole: data.role === "admin" ? "admin" : "user",
+            },
+        });
 
         return {
             success: true,
-            message: "Added admin current role",
+            message: "Admin current role updated",
         };
+    } catch {
+        return { success: false, message: "Failed to set admin role" };
     }
-    catch {
-        return { success: false, message: "Something Wrong!!" }
-    }
-
 }
 
 export async function deleteAdminCurrentRole(data: Data) {
-
     try {
-
-        const AdminRole = await getAdminRoleModel();
-        const result = await AdminRole.deleteOne({ email: data.email })
-
-        if (result.deletedCount === 0) {
-            return {
-                success: false,
-                message: "Admin role not found"
-            }
-        }
+        await prisma.adminRole.deleteMany({
+            where: { email: data.email },
+        });
 
         return {
             success: true,
             message: "Deleted admin current role",
         };
+    } catch {
+        return { success: false, message: "Failed to delete admin role" };
     }
-    catch {
-        return { success: false, message: "Something Wrong!!" }
-    }
-
 }

@@ -1,4 +1,4 @@
-import { getUserModel } from "@/lib/models/user";
+import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
@@ -10,15 +10,14 @@ const loginSchema = z.object({
   password: z.string().min(3),
 });
 
-export const POST = async (req: NextRequest) => {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
     const { email, password } = loginSchema.parse(body);
 
-    const User = await getUserModel();
-
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -40,7 +39,7 @@ export const POST = async (req: NextRequest) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "3d" }
     );
@@ -49,13 +48,18 @@ export const POST = async (req: NextRequest) => {
       {
         success: true,
         message: "Logged in successfully",
-        user: { email: user.email, username: user.username, role: user.role },
+        user: {
+          email: user.email,
+          username: user.username,
+          role: user.role,
+        },
       },
       { status: 200 }
     );
 
     response.cookies.set("token", token, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       path: "/",
       maxAge: 60 * 60 * 24 * 3,
@@ -63,8 +67,6 @@ export const POST = async (req: NextRequest) => {
 
     return response;
   } catch (err: unknown) {
-    console.error(err);
-
     if (err instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, message: "Invalid input data", errors: err.errors },
@@ -77,4 +79,4 @@ export const POST = async (req: NextRequest) => {
       { status: 500 }
     );
   }
-};
+}
