@@ -19,7 +19,7 @@ const statusBadgeStyles: Record<string, string> = {
 
 export function SpecialEvents() {
   const [specialEventDialogOpen, setSpecialEventDialogOpen] = useState(false)
-  const { events, isLoading } = useSpecialEvents()
+  const { events, isLoading, refetch } = useSpecialEvents()
 
   return (
     <>
@@ -85,7 +85,7 @@ export function SpecialEvents() {
         </CardContent>
       </Card>
 
-      <SpecialEventDialog open={specialEventDialogOpen} onOpenChange={setSpecialEventDialogOpen} />
+      <SpecialEventDialog open={specialEventDialogOpen} onOpenChange={setSpecialEventDialogOpen} onSaved={refetch} />
     </>
   )
 }

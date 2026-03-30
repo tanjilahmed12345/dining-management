@@ -11,6 +11,7 @@ import { TableSkeleton } from "@/components/ui/loading-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
 import { formatDate } from "@/lib/utils"
 import type { Confirmation } from "@/lib/types"
+import api from "@/lib/api/client"
 import { toast } from "sonner"
 
 interface UserHistoryProps {
@@ -30,8 +31,17 @@ export function UserHistory({ userConfirmations, isLoading }: UserHistoryProps) 
     setFeedback({ ...feedback, [menuItemId]: value })
   }
 
-  const submitFeedback = (menuItemId: string) => {
-    toast(`Thank you for your feedback! Rating: ${mealRatings[menuItemId] || 0}/5`)
+  const submitFeedback = async (menuItemId: string) => {
+    try {
+      await api.post("/api/ratings", {
+        menuItemId,
+        rating: mealRatings[menuItemId] || 0,
+        feedback: feedback[menuItemId] || "",
+      })
+      toast.success(`Thank you! Rating: ${mealRatings[menuItemId] || 0}/5`)
+    } catch {
+      toast.error("Failed to submit feedback.")
+    }
   }
 
   if (isLoading) {

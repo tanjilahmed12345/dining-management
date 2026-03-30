@@ -2,30 +2,25 @@
 
 import { useState } from "react"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2, Save } from "lucide-react"
-import type { ExpenseTransaction } from "@/lib/types"
+import api from "@/lib/api/client"
 import { toast } from "sonner"
 
 interface ExpenseDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  setExpenseData: React.Dispatch<React.SetStateAction<ExpenseTransaction[]>>
+  onSaved: () => void
 }
 
-export function ExpenseDialog({ open, onOpenChange, setExpenseData }: ExpenseDialogProps) {
+export function ExpenseDialog({ open, onOpenChange, onSaved }: ExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [newExpenseTransaction, setNewExpenseTransaction] = useState({
+  const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
     amount: 0,
@@ -33,30 +28,16 @@ export function ExpenseDialog({ open, onOpenChange, setExpenseData }: ExpenseDia
     paymentMethod: "Cash",
   })
 
-  const addExpenseTransaction = async () => {
+  const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      const newTransaction: ExpenseTransaction = {
-        id: `expense-${Date.now()}`,
-        date: newExpenseTransaction.date,
-        description: newExpenseTransaction.description,
-        amount: Number(newExpenseTransaction.amount),
-        category: newExpenseTransaction.category,
-        paymentMethod: newExpenseTransaction.paymentMethod,
-      }
-
-      setExpenseData((prev) => [newTransaction, ...prev])
-
-      setNewExpenseTransaction({
-        date: new Date().toISOString().split("T")[0],
-        description: "",
-        amount: 0,
-        category: "Groceries",
-        paymentMethod: "Cash",
-      })
-
+      await api.post("/api/transactions/expense", { ...form, amount: Number(form.amount) })
+      toast.success("Expense recorded successfully.")
+      setForm({ date: new Date().toISOString().split("T")[0], description: "", amount: 0, category: "Groceries", paymentMethod: "Cash" })
       onOpenChange(false)
-      toast(`Successfully recorded ${newTransaction.amount} for ${newTransaction.description}`)
+      onSaved()
+    } catch {
+      toast.error("Failed to record expense.")
     } finally {
       setIsSubmitting(false)
     }
@@ -69,43 +50,19 @@ export function ExpenseDialog({ open, onOpenChange, setExpenseData }: ExpenseDia
           <DialogTitle className="text-gray-100">Add Expense</DialogTitle>
           <DialogDescription className="text-gray-400">Record a new expense transaction</DialogDescription>
         </DialogHeader>
-
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="expense-date" className="text-right text-gray-300">
-              Date
-            </Label>
-            <Input
-              id="expense-date"
-              type="date"
-              value={newExpenseTransaction.date}
-              onChange={(e) => setNewExpenseTransaction({ ...newExpenseTransaction, date: e.target.value })}
-              className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
-            />
+            <Label className="text-right text-gray-300">Date</Label>
+            <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="col-span-3 border-gray-600 bg-gray-700 text-gray-200" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="expense-description" className="text-right text-gray-300">
-              Description
-            </Label>
-            <Input
-              id="expense-description"
-              placeholder="e.g., Grocery shopping"
-              value={newExpenseTransaction.description}
-              onChange={(e) => setNewExpenseTransaction({ ...newExpenseTransaction, description: e.target.value })}
-              className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
-            />
+            <Label className="text-right text-gray-300">Description</Label>
+            <Input placeholder="e.g., Grocery shopping" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="col-span-3 border-gray-600 bg-gray-700 text-gray-200" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="expense-category" className="text-right text-gray-300">
-              Category
-            </Label>
-            <Select
-              value={newExpenseTransaction.category}
-              onValueChange={(value) => setNewExpenseTransaction({ ...newExpenseTransaction, category: value })}
-            >
-              <SelectTrigger id="expense-category" className="col-span-3 border-gray-600 bg-gray-700 text-gray-200">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
+            <Label className="text-right text-gray-300">Category</Label>
+            <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+              <SelectTrigger className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700 text-gray-200">
                 <SelectItem value="Groceries">Groceries</SelectItem>
                 <SelectItem value="Utilities">Utilities</SelectItem>
@@ -117,32 +74,13 @@ export function ExpenseDialog({ open, onOpenChange, setExpenseData }: ExpenseDia
             </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="expense-amount" className="text-right text-gray-300">
-              Amount
-            </Label>
-            <Input
-              id="expense-amount"
-              type="number"
-              placeholder="0.00"
-              value={newExpenseTransaction.amount}
-              onChange={(e) => setNewExpenseTransaction({ ...newExpenseTransaction, amount: Number(e.target.value) })}
-              className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
-            />
+            <Label className="text-right text-gray-300">Amount</Label>
+            <Input type="number" placeholder="0.00" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} className="col-span-3 border-gray-600 bg-gray-700 text-gray-200" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="expense-payment-method" className="text-right text-gray-300">
-              Payment Method
-            </Label>
-            <Select
-              value={newExpenseTransaction.paymentMethod}
-              onValueChange={(value) => setNewExpenseTransaction({ ...newExpenseTransaction, paymentMethod: value })}
-            >
-              <SelectTrigger
-                id="expense-payment-method"
-                className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
-              >
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
+            <Label className="text-right text-gray-300">Method</Label>
+            <Select value={form.paymentMethod} onValueChange={(v) => setForm({ ...form, paymentMethod: v })}>
+              <SelectTrigger className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700 text-gray-200">
                 <SelectItem value="Cash">Cash</SelectItem>
                 <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
@@ -152,25 +90,10 @@ export function ExpenseDialog({ open, onOpenChange, setExpenseData }: ExpenseDia
             </Select>
           </div>
         </div>
-
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={addExpenseTransaction}
-            className="bg-teal-600 hover:bg-teal-700"
-            disabled={!newExpenseTransaction.description || !newExpenseTransaction.amount || isSubmitting}
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-600 text-gray-300 hover:bg-gray-700">Cancel</Button>
+          <Button onClick={handleSubmit} className="bg-teal-600 hover:bg-teal-700" disabled={!form.description || !form.amount || isSubmitting}>
+            {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Save Expense
           </Button>
         </DialogFooter>

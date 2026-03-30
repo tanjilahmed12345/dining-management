@@ -9,6 +9,7 @@ import { CardGridSkeleton } from "@/components/ui/loading-skeleton"
 import { EmptyState } from "@/components/ui/empty-state"
 import { formatDate } from "@/lib/utils"
 import type { MenuItem, Confirmation } from "@/lib/types"
+import api from "@/lib/api/client"
 import { toast } from "sonner"
 
 interface UpcomingMealsProps {
@@ -20,28 +21,23 @@ interface UpcomingMealsProps {
 
 export function UpcomingMeals({ menus, isLoading, userConfirmations, setUserConfirmations }: UpcomingMealsProps) {
 
-  const toggleConfirmation = (menuItemId: string, date: string) => {
-    setUserConfirmations((prev) => {
-      const existing = prev.find((c) => c.menuItemId === menuItemId)
+  const toggleConfirmation = async (menuItemId: string, date: string) => {
+    try {
+      const res = await api.post("/api/confirmations", { menuItemId, date })
+      const confirmation = res.data.data
 
-      if (existing) {
-        const newConfirmed = !existing.confirmed
-        toast(newConfirmed ? "Lunch confirmed!" : "Confirmation cancelled.")
-        return prev.map((c) => (c.menuItemId === menuItemId ? { ...c, confirmed: newConfirmed } : c))
-      } else {
-        toast("Lunch confirmed!")
-        return [
-          ...prev,
-          {
-            id: `new-${Date.now()}`,
-            userId: "",
-            menuItemId,
-            date,
-            confirmed: true,
-          },
-        ]
-      }
-    })
+      setUserConfirmations((prev) => {
+        const existing = prev.findIndex((c) => c.menuItemId === menuItemId)
+        if (existing >= 0) {
+          return prev.map((c) => c.menuItemId === menuItemId ? confirmation : c)
+        }
+        return [...prev, confirmation]
+      })
+
+      toast.success(confirmation.confirmed ? "Lunch confirmed!" : "Confirmation cancelled.")
+    } catch {
+      toast.error("Failed to update confirmation.")
+    }
   }
 
   if (isLoading) {

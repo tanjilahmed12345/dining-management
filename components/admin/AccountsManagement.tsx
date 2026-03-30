@@ -23,13 +23,13 @@ export function AccountsManagement() {
   const {
     transactions: incomeData,
     isLoading: incomeLoading,
-    setTransactions: setIncomeData,
+    refetch: refetchIncome,
   } = useIncomeTransactions(accountsPeriod)
 
   const {
     transactions: expenseData,
     isLoading: expenseLoading,
-    setTransactions: setExpenseData,
+    refetch: refetchExpense,
   } = useExpenseTransactions(accountsPeriod)
 
   const downloadTransactions = (type: "income" | "expense") => {
@@ -128,8 +128,8 @@ export function AccountsManagement() {
         </CardContent>
       </Card>
 
-      <IncomeDialog open={incomeDialogOpen} onOpenChange={setIncomeDialogOpen} setIncomeData={setIncomeData} />
-      <ExpenseDialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen} setExpenseData={setExpenseData} />
+      <IncomeDialog open={incomeDialogOpen} onOpenChange={setIncomeDialogOpen} onSaved={refetchIncome} />
+      <ExpenseDialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen} onSaved={refetchExpense} />
     </>
   )
 }

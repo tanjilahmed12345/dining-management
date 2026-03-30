@@ -11,7 +11,7 @@ import { AccountsManagement } from "@/components/admin/AccountsManagement"
 import { useMenus } from "@/lib/hooks/use-menus"
 
 export default function AdminDashboard() {
-  const { menus, setMenus, isLoading } = useMenus()
+  const { menus, isLoading, refetch } = useMenus()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="menu" className="mt-6">
-            <MenuManagement menus={menus} setMenus={setMenus} isLoading={isLoading} />
+            <MenuManagement menus={menus} isLoading={isLoading} refetch={refetch} />
           </TabsContent>
 
           <TabsContent value="participants" className="mt-6">
