@@ -1,64 +1,39 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { IncomeTransaction, ExpenseTransaction } from "@/lib/data"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart, CreditCard, DollarSign, Download, Filter, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-// import { DatePicker } from "@/components/ui/DatePicker"
-import { format } from "date-fns"
-import {
-  incomeTransactions,
-  expenseTransactions,
-  getIncomeTransactionsByPeriod,
-  getExpenseTransactionsByPeriod,
-} from "@/lib/data"
+import { useIncomeTransactions, useExpenseTransactions } from "@/lib/hooks/use-accounts"
 import { IncomeDialog } from "@/components/admin/dialogs/IncomeDialog"
 import { ExpenseDialog } from "@/components/admin/dialogs/ExpenseDialog"
 import { ReceiveTab } from "@/components/admin/accounts/ReceiveTab"
 import { SpendTab } from "@/components/admin/accounts/SpendTab"
 import { TotalTab } from "@/components/admin/accounts/TotalTab"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
 
 export function AccountsManagement() {
   const [accountsTab, setAccountsTab] = useState("receive")
   const [accountsPeriod, setAccountsPeriod] = useState<"weekly" | "monthly" | "yearly">("monthly")
-  const [incomeData, setIncomeData] = useState<IncomeTransaction[]>([])
-  const [expenseData, setExpenseData] = useState<ExpenseTransaction[]>([])
   const [incomeDialogOpen, setIncomeDialogOpen] = useState(false)
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false)
-  const [customDateRange] = useState({
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    endDate: new Date(),
-  })
-  const [isCustomDateRange, setIsCustomDateRange] = useState(false)
 
-  // Load accounts data based on selected period
-  useEffect(() => {
-    if (isCustomDateRange) {
-      // Format dates for API call
-      const startDateStr = format(customDateRange.startDate, "yyyy-MM-dd")
-      const endDateStr = format(customDateRange.endDate, "yyyy-MM-dd")
+  const {
+    transactions: incomeData,
+    isLoading: incomeLoading,
+    setTransactions: setIncomeData,
+  } = useIncomeTransactions(accountsPeriod)
 
-      // Filter transactions by custom date range
-      const filteredIncome = incomeTransactions.filter((t) => t.date >= startDateStr && t.date <= endDateStr)
-      const filteredExpenses = expenseTransactions.filter((t) => t.date >= startDateStr && t.date <= endDateStr)
+  const {
+    transactions: expenseData,
+    isLoading: expenseLoading,
+    setTransactions: setExpenseData,
+  } = useExpenseTransactions(accountsPeriod)
 
-      setIncomeData(filteredIncome)
-      setExpenseData(filteredExpenses)
-    } else {
-      // Use predefined periods
-      setIncomeData(getIncomeTransactionsByPeriod(accountsPeriod))
-      setExpenseData(getExpenseTransactionsByPeriod(accountsPeriod))
-    }
-  }, [accountsPeriod, isCustomDateRange, customDateRange])
-
-  // Download transactions as PDF
   const downloadTransactions = (type: "income" | "expense") => {
-    toast( `The ${type} transactions report has been downloaded as a PDF.` )
+    toast(`The ${type} transactions report has been downloaded as a PDF.`)
   }
 
   return (
@@ -91,7 +66,6 @@ export function AccountsManagement() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Common filter controls for both tabs */}
             <div className="p-4 bg-gray-800/30 border-b border-gray-700">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -101,7 +75,6 @@ export function AccountsManagement() {
                     value={accountsPeriod}
                     onValueChange={(value: string) => {
                       setAccountsPeriod(value as "weekly" | "monthly" | "yearly")
-                      setIsCustomDateRange(value === "custom")
                     }}
                   >
                     <SelectTrigger className="w-[150px] border-gray-600 text-gray-300 bg-gray-800">
@@ -111,31 +84,9 @@ export function AccountsManagement() {
                       <SelectItem value="weekly">Weekly</SelectItem>
                       <SelectItem value="monthly">Monthly</SelectItem>
                       <SelectItem value="yearly">Yearly</SelectItem>
-                      <SelectItem value="custom">Custom Range</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-
-                {isCustomDateRange && (
-                  <div className="flex items-center gap-2">
-                    {/* <div className="flex items-center gap-2">
-                      <span className="text-gray-300 text-sm">From:</span>
-                      <DatePicker
-                        date={customDateRange.startDate}
-                        onSelect={(date) => setCustomDateRange((prev) => ({ ...prev, startDate: date }))}
-                        className="border-gray-600 bg-gray-800 text-gray-300"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-300 text-sm">To:</span>
-                      <DatePicker
-                        date={customDateRange.endDate}
-                        onSelect={(date) => setCustomDateRange((prev) => ({ ...prev, endDate: date }))}
-                        className="border-gray-600 bg-gray-800 text-gray-300"
-                      />
-                    </div> */}
-                  </div>
-                )}
 
                 <div className="flex items-center gap-2 ml-auto">
                   <Button
@@ -158,11 +109,11 @@ export function AccountsManagement() {
             </div>
 
             <TabsContent value="receive" className="p-0">
-              <ReceiveTab incomeData={incomeData} />
+              <ReceiveTab incomeData={incomeData} isLoading={incomeLoading} />
             </TabsContent>
 
             <TabsContent value="spend" className="p-0">
-              <SpendTab expenseData={expenseData} />
+              <SpendTab expenseData={expenseData} isLoading={expenseLoading} />
             </TabsContent>
 
             <TabsContent value="total" className="p-0">
@@ -170,8 +121,7 @@ export function AccountsManagement() {
                 incomeData={incomeData}
                 expenseData={expenseData}
                 accountsPeriod={accountsPeriod}
-                isCustomDateRange={isCustomDateRange}
-                customDateRange={customDateRange}
+                isLoading={incomeLoading || expenseLoading}
               />
             </TabsContent>
           </Tabs>

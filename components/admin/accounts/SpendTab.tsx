@@ -2,22 +2,43 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { PieChart, TrendingDown, Wallet } from "lucide-react"
+import { CreditCard, PieChart, TrendingDown, Wallet } from "lucide-react"
+import type { ExpenseTransaction } from "@/lib/types"
+import { StatCardSkeleton, TableSkeleton } from "@/components/ui/loading-skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
+import { formatDate, formatCurrency } from "@/lib/utils"
 
-export function SpendTab({ expenseData }: { expenseData: import("@/lib/data").ExpenseTransaction[] }) {
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    })
+interface SpendTabProps {
+  expenseData: ExpenseTransaction[]
+  isLoading: boolean
+}
+
+export function SpendTab({ expenseData, isLoading }: SpendTabProps) {
+  if (isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <StatCardSkeleton count={3} />
+        <TableSkeleton rows={5} cols={5} />
+      </div>
+    )
   }
+
+  if (expenseData.length === 0) {
+    return (
+      <EmptyState
+        icon={CreditCard}
+        title="No expense transactions"
+        description="Expense transactions will appear here once expenses are recorded."
+      />
+    )
+  }
+
+  const totalExpenses = expenseData.reduce((sum, t) => sum + t.amount, 0)
+  const categoryCount = new Set(expenseData.map((t) => t.category)).size
+  const averageExpense = expenseData.length > 0 ? totalExpenses / expenseData.length : 0
 
   return (
     <>
-      {/* Summary cards */}
       <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gray-800 border-gray-700">
           <CardContent className="p-4 flex items-center gap-4">
@@ -26,9 +47,7 @@ export function SpendTab({ expenseData }: { expenseData: import("@/lib/data").Ex
             </div>
             <div>
               <p className="text-sm text-gray-400">Total Expenses</p>
-              <p className="text-2xl font-bold text-gray-100">
-                ৳{expenseData.reduce((sum, t) => sum + t.amount, 0).toFixed(2)}
-              </p>
+              <p className="text-2xl font-bold text-gray-100">{formatCurrency(totalExpenses)}</p>
             </div>
           </CardContent>
         </Card>
@@ -39,7 +58,7 @@ export function SpendTab({ expenseData }: { expenseData: import("@/lib/data").Ex
             </div>
             <div>
               <p className="text-sm text-gray-400">Categories</p>
-              <p className="text-2xl font-bold text-gray-100">{new Set(expenseData.map((t) => t.category)).size}</p>
+              <p className="text-2xl font-bold text-gray-100">{categoryCount}</p>
             </div>
           </CardContent>
         </Card>
@@ -50,18 +69,12 @@ export function SpendTab({ expenseData }: { expenseData: import("@/lib/data").Ex
             </div>
             <div>
               <p className="text-sm text-gray-400">Average Expense</p>
-              <p className="text-2xl font-bold text-gray-100">
-                ৳
-                {expenseData.length > 0
-                  ? (expenseData.reduce((sum, t) => sum + t.amount, 0) / expenseData.length).toFixed(2)
-                  : "0.00"}
-              </p>
+              <p className="text-2xl font-bold text-gray-100">{formatCurrency(averageExpense)}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Transactions table */}
       <div className="p-4 pt-0">
         <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
           <Table>
@@ -75,26 +88,18 @@ export function SpendTab({ expenseData }: { expenseData: import("@/lib/data").Ex
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenseData.length > 0 ? (
-                expenseData.map((transaction) => (
-                  <TableRow
-                    key={transaction.id}
-                    className="hover:bg-gray-700/50 transition-colors duration-200 border-gray-700"
-                  >
-                    <TableCell className="font-medium text-gray-200">{formatDate(transaction.date)}</TableCell>
-                    <TableCell className="text-gray-300">{transaction.description}</TableCell>
-                    <TableCell className="text-gray-300">{transaction.category}</TableCell>
-                    <TableCell className="text-gray-300 font-medium">৳{transaction.amount.toFixed(2)}</TableCell>
-                    <TableCell className="text-gray-300">{transaction.paymentMethod}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow className="border-gray-700">
-                  <TableCell colSpan={6} className="text-center text-gray-400 py-4">
-                    No expense transactions found for the selected period.
-                  </TableCell>
+              {expenseData.map((transaction) => (
+                <TableRow
+                  key={transaction.id}
+                  className="hover:bg-gray-700/50 transition-colors duration-200 border-gray-700"
+                >
+                  <TableCell className="font-medium text-gray-200">{formatDate(transaction.date)}</TableCell>
+                  <TableCell className="text-gray-300">{transaction.description}</TableCell>
+                  <TableCell className="text-gray-300">{transaction.category}</TableCell>
+                  <TableCell className="text-gray-300 font-medium">{formatCurrency(transaction.amount)}</TableCell>
+                  <TableCell className="text-gray-300">{transaction.paymentMethod}</TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </div>

@@ -6,20 +6,20 @@ import { UserHeader } from "@/components/user/UserHeader"
 import { UpcomingMeals } from "@/components/user/UpcomingMeals"
 import { UserHistory } from "@/components/user/UserHistory"
 import { UserBilling } from "@/components/user/UserBilling"
-import { users, confirmations } from "@/lib/data"
+import { useMenus } from "@/lib/hooks/use-menus"
+import { useAuth } from "@/components/auth/AuthContext"
+import type { Confirmation } from "@/lib/types"
 
 export default function UserDashboard() {
-  // Mock current user (in a real app, this would come from authentication)
-  const currentUser = users[0]
-
-  // State for lunch confirmations
-  const [userConfirmations, setUserConfirmations] = useState(confirmations.filter((c) => c.userId === currentUser.id))
+  useAuth()
+  const { menus, isLoading: menusLoading } = useMenus()
+  const [userConfirmations, setUserConfirmations] = useState<Confirmation[]>([])
   const [activeTab, setActiveTab] = useState("upcoming")
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       <div className="container mx-auto px-4 py-8">
-        <UserHeader currentUser={currentUser} />
+        <UserHeader />
 
         <Tabs defaultValue="upcoming" className="w-full" onValueChange={setActiveTab} value={activeTab}>
           <TabsList className="grid w-full grid-cols-3 bg-gray-800">
@@ -45,18 +45,19 @@ export default function UserDashboard() {
 
           <TabsContent value="upcoming" className="mt-6">
             <UpcomingMeals
-              currentUser={currentUser}
+              menus={menus}
+              isLoading={menusLoading}
               userConfirmations={userConfirmations}
               setUserConfirmations={setUserConfirmations}
             />
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">
-            <UserHistory userConfirmations={userConfirmations} />
+            <UserHistory userConfirmations={userConfirmations} isLoading={menusLoading} />
           </TabsContent>
 
           <TabsContent value="billing" className="mt-6">
-            <UserBilling currentUser={currentUser} />
+            <UserBilling />
           </TabsContent>
         </Tabs>
       </div>

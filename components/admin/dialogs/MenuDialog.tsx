@@ -1,4 +1,6 @@
 "use client"
+
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -12,11 +14,22 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Save } from "lucide-react"
+import { Loader2, Save } from "lucide-react"
+import type { MenuItem } from "@/lib/types"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
 
-import type { MenuItem } from "@/lib/data"
+interface MenuDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  dialogType: "edit" | "new"
+  editingMenu: MenuItem | null
+  setEditingMenu: React.Dispatch<React.SetStateAction<MenuItem | null>>
+  newMenu: { name: string; description: string; date: string; dayOfWeek: string; mealType: string; active: boolean }
+  setNewMenu: React.Dispatch<
+    React.SetStateAction<{ name: string; description: string; date: string; dayOfWeek: string; mealType: string; active: boolean }>
+  >
+  setMenus: React.Dispatch<React.SetStateAction<MenuItem[]>>
+}
 
 export function MenuDialog({
   open,
@@ -27,38 +40,35 @@ export function MenuDialog({
   newMenu,
   setNewMenu,
   setMenus,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  dialogType: "edit" | "new"
-  editingMenu: MenuItem | null
-  setEditingMenu: React.Dispatch<React.SetStateAction<MenuItem | null>>
-  newMenu: { name: string; description: string; date: string; dayOfWeek: string; mealType: string; active: boolean }
-  setNewMenu: React.Dispatch<React.SetStateAction<{ name: string; description: string; date: string; dayOfWeek: string; mealType: string; active: boolean }>>
-  setMenus: React.Dispatch<React.SetStateAction<MenuItem[]>>
-}) {
-  // Save menu changes
-  const saveMenuChanges = () => {
-    if (dialogType === "edit" && editingMenu) {
-      setMenus((prev) => prev.map((item) => (item.id === editingMenu.id ? editingMenu : item)))
-      toast("The menu has been updated successfully.")
-    } else if (dialogType === "new") {
-      const newId = `new-${Date.now()}`
-      const date = new Date(newMenu.date)
-      const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" })
+}: MenuDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-      setMenus((prev) => [
-        ...prev,
-        {
-          ...newMenu,
-          id: newId,
-          dayOfWeek,
-          mealType: newMenu.name,
-        },
-      ])
-      toast("A new menu has been created successfully.")
+  const saveMenuChanges = async () => {
+    setIsSubmitting(true)
+    try {
+      if (dialogType === "edit" && editingMenu) {
+        setMenus((prev) => prev.map((item) => (item.id === editingMenu.id ? editingMenu : item)))
+        toast("The menu has been updated successfully.")
+      } else if (dialogType === "new") {
+        const newId = `new-${Date.now()}`
+        const date = new Date(newMenu.date)
+        const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" })
+
+        setMenus((prev) => [
+          ...prev,
+          {
+            ...newMenu,
+            id: newId,
+            dayOfWeek,
+            mealType: newMenu.name,
+          },
+        ])
+        toast("A new menu has been created successfully.")
+      }
+      onOpenChange(false)
+    } finally {
+      setIsSubmitting(false)
     }
-    onOpenChange(false)
   }
 
   return (
@@ -155,8 +165,12 @@ export function MenuDialog({
           >
             Cancel
           </Button>
-          <Button onClick={saveMenuChanges} className="bg-teal-600 hover:bg-teal-700">
-            <Save className="h-4 w-4 mr-2" />
+          <Button onClick={saveMenuChanges} className="bg-teal-600 hover:bg-teal-700" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             {dialogType === "edit" ? "Save Changes" : "Add Menu"}
           </Button>
         </DialogFooter>

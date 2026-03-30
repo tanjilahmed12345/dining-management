@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -13,11 +14,36 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save } from "lucide-react"
+import { Loader2, Save } from "lucide-react"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
 
-export function SpecialEventDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+interface SpecialEventDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function SpecialEventDialog({ open, onOpenChange }: SpecialEventDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formState, setFormState] = useState({
+    name: "",
+    date: "",
+    type: "",
+    description: "",
+    participants: "",
+  })
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+    try {
+      // TODO: Replace with API call
+      onOpenChange(false)
+      toast("The special event has been created successfully.")
+      setFormState({ name: "", date: "", type: "", description: "", participants: "" })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gray-800 border-gray-700">
@@ -36,6 +62,8 @@ export function SpecialEventDialog({ open, onOpenChange }: { open: boolean; onOp
             <Input
               id="event-name"
               placeholder="Enter event name"
+              value={formState.name}
+              onChange={(e) => setFormState({ ...formState, name: e.target.value })}
               className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
             />
           </div>
@@ -43,13 +71,22 @@ export function SpecialEventDialog({ open, onOpenChange }: { open: boolean; onOp
             <Label htmlFor="event-date" className="text-right text-gray-300">
               Date
             </Label>
-            <Input id="event-date" type="date" className="col-span-3 border-gray-600 bg-gray-700 text-gray-200" />
+            <Input
+              id="event-date"
+              type="date"
+              value={formState.date}
+              onChange={(e) => setFormState({ ...formState, date: e.target.value })}
+              className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="event-type" className="text-right text-gray-300">
               Event Type
             </Label>
-            <Select>
+            <Select
+              value={formState.type}
+              onValueChange={(value) => setFormState({ ...formState, type: value })}
+            >
               <SelectTrigger id="event-type" className="col-span-3 border-gray-600 bg-gray-700 text-gray-200">
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
@@ -69,6 +106,8 @@ export function SpecialEventDialog({ open, onOpenChange }: { open: boolean; onOp
             <Textarea
               id="event-description"
               placeholder="Describe the event"
+              value={formState.description}
+              onChange={(e) => setFormState({ ...formState, description: e.target.value })}
               className="col-span-3 border-gray-600 bg-gray-700 text-gray-200"
             />
           </div>
@@ -76,7 +115,10 @@ export function SpecialEventDialog({ open, onOpenChange }: { open: boolean; onOp
             <Label htmlFor="event-participants" className="text-right text-gray-300">
               Participants
             </Label>
-            <Select>
+            <Select
+              value={formState.participants}
+              onValueChange={(value) => setFormState({ ...formState, participants: value })}
+            >
               <SelectTrigger id="event-participants" className="col-span-3 border-gray-600 bg-gray-700 text-gray-200">
                 <SelectValue placeholder="Select participants" />
               </SelectTrigger>
@@ -101,12 +143,14 @@ export function SpecialEventDialog({ open, onOpenChange }: { open: boolean; onOp
           </Button>
           <Button
             className="bg-teal-600 hover:bg-teal-700"
-            onClick={() => {
-              onOpenChange(false)
-              toast("The special event has been created successfully.")
-            }}
+            onClick={handleSubmit}
+            disabled={!formState.name || !formState.date || isSubmitting}
           >
-            <Save className="h-4 w-4 mr-2" />
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             Create Event
           </Button>
         </DialogFooter>

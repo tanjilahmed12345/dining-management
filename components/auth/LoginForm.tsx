@@ -15,6 +15,7 @@ import { toast } from "sonner"
 import { LoginFormValues, loginSchema } from "@/lib/auth/schemas"
 import { useAtom } from "jotai"
 import { currentUserAtom, loginAtom } from "@/lib/atoms/auth"
+import { Loader2 } from "lucide-react"
 
 export function LoginForm() {
   const { login } = useAuth()
@@ -26,17 +27,14 @@ export function LoginForm() {
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   })
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true)
     try {
       const user = await login(data.email, data.password)
-      toast("Login Successful... Welcome back!")
+      toast.success("Welcome back!")
       setLogin(true)
       setCurrentUser({ username: user.username, email: user.email, role: user.role })
 
@@ -46,7 +44,7 @@ export function LoginForm() {
         router.push("/user/dashboard")
       }
     } catch {
-      toast("Invalid email or password. Please try again.")
+      toast.error("Invalid email or password.")
     } finally {
       setIsLoading(false)
     }
@@ -54,10 +52,10 @@ export function LoginForm() {
 
   return (
     <>
-      <Card className="w-full">
+      <Card className="w-full bg-gray-800 border-gray-700">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardTitle className="text-2xl text-gray-100">Login</CardTitle>
+          <CardDescription className="text-gray-400">Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -67,9 +65,9 @@ export function LoginForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-gray-300">Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
+                      <Input placeholder="your.email@example.com" className="border-gray-600 bg-gray-700 text-gray-200 placeholder:text-gray-500" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -80,37 +78,18 @@ export function LoginForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-gray-300">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••" {...field} />
+                      <Input type="password" placeholder="••••••" className="border-gray-600 bg-gray-700 text-gray-200 placeholder:text-gray-500" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading}>
                 {isLoading ? (
-                  <span className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Logging in...
                   </span>
                 ) : (
@@ -121,9 +100,9 @@ export function LoginForm() {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <div className="text-sm text-center">
+          <div className="text-sm text-center text-gray-400">
             Don&apos;t have an account?{" "}
-            <Link href="/auth/signup" className="text-teal-600 hover:text-teal-500 font-medium">
+            <Link href="/auth/signup" className="text-teal-400 hover:text-teal-300 font-medium">
               Sign up
             </Link>
           </div>

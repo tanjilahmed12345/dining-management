@@ -13,15 +13,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save } from "lucide-react"
+import { Loader2, Save } from "lucide-react"
+import type { ExpenseTransaction } from "@/lib/types"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
 
-export function ExpenseDialog({ open, onOpenChange, setExpenseData }: {
+interface ExpenseDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  setExpenseData: React.Dispatch<React.SetStateAction<import("@/lib/data").ExpenseTransaction[]>>
-}) {
+  setExpenseData: React.Dispatch<React.SetStateAction<ExpenseTransaction[]>>
+}
+
+export function ExpenseDialog({ open, onOpenChange, setExpenseData }: ExpenseDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [newExpenseTransaction, setNewExpenseTransaction] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
@@ -30,33 +33,33 @@ export function ExpenseDialog({ open, onOpenChange, setExpenseData }: {
     paymentMethod: "Cash",
   })
 
-  // Add new expense transaction
-  const addExpenseTransaction = () => {
-    // In a real app, this would send data to the server
-    const newTransaction = {
-      id: `expense-${Date.now()}`,
-      date: newExpenseTransaction.date,
-      description: newExpenseTransaction.description,
-      amount: Number(newExpenseTransaction.amount),
-      category: newExpenseTransaction.category,
-      paymentMethod: newExpenseTransaction.paymentMethod,
+  const addExpenseTransaction = async () => {
+    setIsSubmitting(true)
+    try {
+      const newTransaction: ExpenseTransaction = {
+        id: `expense-${Date.now()}`,
+        date: newExpenseTransaction.date,
+        description: newExpenseTransaction.description,
+        amount: Number(newExpenseTransaction.amount),
+        category: newExpenseTransaction.category,
+        paymentMethod: newExpenseTransaction.paymentMethod,
+      }
+
+      setExpenseData((prev) => [newTransaction, ...prev])
+
+      setNewExpenseTransaction({
+        date: new Date().toISOString().split("T")[0],
+        description: "",
+        amount: 0,
+        category: "Groceries",
+        paymentMethod: "Cash",
+      })
+
+      onOpenChange(false)
+      toast(`Successfully recorded ${newTransaction.amount} for ${newTransaction.description}`)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    // Add to the beginning of the array (newest first)
-    setExpenseData((prev) => [newTransaction, ...prev])
-
-    // Reset form
-    setNewExpenseTransaction({
-      date: new Date().toISOString().split("T")[0],
-      description: "",
-      amount: 0,
-      category: "Groceries",
-      paymentMethod: "Cash",
-    })
-
-    onOpenChange(false)
-
-    toast(`Successfully recorded ${newTransaction.amount} for ${newTransaction.description}` )
   }
 
   return (
@@ -161,9 +164,13 @@ export function ExpenseDialog({ open, onOpenChange, setExpenseData }: {
           <Button
             onClick={addExpenseTransaction}
             className="bg-teal-600 hover:bg-teal-700"
-            disabled={!newExpenseTransaction.description || !newExpenseTransaction.amount}
+            disabled={!newExpenseTransaction.description || !newExpenseTransaction.amount || isSubmitting}
           >
-            <Save className="h-4 w-4 mr-2" />
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             Save Expense
           </Button>
         </DialogFooter>

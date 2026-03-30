@@ -13,16 +13,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save } from "lucide-react"
-import { users, getUserById } from "@/lib/data"
+import { Loader2, Save } from "lucide-react"
+import type { IncomeTransaction } from "@/lib/types"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
 
-export function IncomeDialog({ open, onOpenChange, setIncomeData }: {
+interface IncomeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  setIncomeData: React.Dispatch<React.SetStateAction<import("@/lib/data").IncomeTransaction[]>>
-}) {
+  setIncomeData: React.Dispatch<React.SetStateAction<IncomeTransaction[]>>
+}
+
+export function IncomeDialog({ open, onOpenChange, setIncomeData }: IncomeDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [newIncomeTransaction, setNewIncomeTransaction] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
@@ -31,34 +33,33 @@ export function IncomeDialog({ open, onOpenChange, setIncomeData }: {
     paymentMethod: "Cash",
   })
 
-  // Add new income transaction
-  const addIncomeTransaction = () => {
-    // In a real app, this would send data to the server
-    const newTransaction = {
-      id: `income-${Date.now()}`,
-      date: newIncomeTransaction.date,
-      description: newIncomeTransaction.description,
-      userId: newIncomeTransaction.userId,
-      amount: Number(newIncomeTransaction.amount),
-      paymentMethod: newIncomeTransaction.paymentMethod,
+  const addIncomeTransaction = async () => {
+    setIsSubmitting(true)
+    try {
+      const newTransaction: IncomeTransaction = {
+        id: `income-${Date.now()}`,
+        date: newIncomeTransaction.date,
+        description: newIncomeTransaction.description,
+        userId: newIncomeTransaction.userId,
+        amount: Number(newIncomeTransaction.amount),
+        paymentMethod: newIncomeTransaction.paymentMethod,
+      }
+
+      setIncomeData((prev) => [newTransaction, ...prev])
+
+      setNewIncomeTransaction({
+        date: new Date().toISOString().split("T")[0],
+        description: "",
+        userId: "",
+        amount: 0,
+        paymentMethod: "Cash",
+      })
+
+      onOpenChange(false)
+      toast(`Successfully recorded ${newTransaction.amount} income`)
+    } finally {
+      setIsSubmitting(false)
     }
-
-    // Add to the beginning of the array (newest first)
-    setIncomeData((prev) => [newTransaction, ...prev])
-
-    // Reset form
-    setNewIncomeTransaction({
-      date: new Date().toISOString().split("T")[0],
-      description: "",
-      userId: "",
-      amount: 0,
-      paymentMethod: "Cash",
-    })
-
-    onOpenChange(false)
-
-    toast(
-     `Successfully recorded ${newTransaction.amount} from ${getUserById(newTransaction.userId)?.name || "Unknown"}`)
   }
 
   return (
@@ -103,14 +104,12 @@ export function IncomeDialog({ open, onOpenChange, setIncomeData }: {
               onValueChange={(value) => setNewIncomeTransaction({ ...newIncomeTransaction, userId: value })}
             >
               <SelectTrigger id="income-user" className="col-span-3 border-gray-600 bg-gray-700 text-gray-200">
-                <SelectValue placeholder="Select user" />
+                <SelectValue placeholder="Users will be loaded from backend" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700 text-gray-200">
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="__placeholder" disabled>
+                  Users will be loaded from backend
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -162,9 +161,13 @@ export function IncomeDialog({ open, onOpenChange, setIncomeData }: {
           <Button
             onClick={addIncomeTransaction}
             className="bg-teal-600 hover:bg-teal-700"
-            disabled={!newIncomeTransaction.description || !newIncomeTransaction.userId || !newIncomeTransaction.amount}
+            disabled={!newIncomeTransaction.description || !newIncomeTransaction.amount || isSubmitting}
           >
-            <Save className="h-4 w-4 mr-2" />
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             Save Income
           </Button>
         </DialogFooter>

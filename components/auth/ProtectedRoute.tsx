@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "./AuthContext"
@@ -18,24 +17,16 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
   useEffect(() => {
     if (!isLoading) {
-      // If not authenticated, redirect to login
       if (!isAuthenticated) {
         router.push("/auth/login")
         return
       }
-
-      // If authenticated but no role is selected (admin case)
       if (user?.role === "admin" && !selectedRole) {
-        // Stay on the current page, the role selection modal will appear
         return
       }
-
-      // If role is required and user doesn't have it
       if (requiredRole) {
         const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-
         if (!selectedRole || !roles.includes(selectedRole)) {
-          // Redirect based on the user's actual role
           if (selectedRole === "admin") {
             router.push("/admin/dashboard")
           } else {
@@ -46,30 +37,21 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     }
   }, [isLoading, isAuthenticated, user, selectedRole, requiredRole, router])
 
-  // Show nothing while checking authentication
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+      </div>
+    )
   }
 
-  // If not authenticated, don't render children
-  if (!isAuthenticated) {
-    return null
-  }
+  if (!isAuthenticated) return null
+  if (user?.role === "admin" && !selectedRole) return <>{children}</>
 
-  // If admin without selected role, render children (to show the role selection modal)
-  if (user?.role === "admin" && !selectedRole) {
-    return <>{children}</>
-  }
-
-  // If role is required, check if user has it
   if (requiredRole) {
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-
-    if (!selectedRole || !roles.includes(selectedRole)) {
-      return null
-    }
+    if (!selectedRole || !roles.includes(selectedRole)) return null
   }
 
-  // Otherwise, render children
   return <>{children}</>
 }

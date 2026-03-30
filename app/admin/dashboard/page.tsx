@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 import { MenuManagement } from "@/components/admin/MenuManagement"
@@ -9,11 +8,10 @@ import { HistoryView } from "@/components/admin/HistoryView"
 import { BillingManagement } from "@/components/admin/BillingManagement"
 import { SpecialEvents } from "@/components/admin/SpecialEvents"
 import { AccountsManagement } from "@/components/admin/AccountsManagement"
-import { menuItems } from "@/lib/data"
+import { useMenus } from "@/lib/hooks/use-menus"
 
 export default function AdminDashboard() {
-  // State for menu items - shared across components
-  const [menus, setMenus] = useState(menuItems)
+  const { menus, setMenus, isLoading } = useMenus()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
@@ -61,15 +59,15 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="menu" className="mt-6">
-            <MenuManagement menus={menus} setMenus={setMenus} />
+            <MenuManagement menus={menus} setMenus={setMenus} isLoading={isLoading} />
           </TabsContent>
 
           <TabsContent value="participants" className="mt-6">
-            <ParticipantsManagement menus={menus} />
+            <ParticipantsManagement menus={menus} isLoading={isLoading} />
           </TabsContent>
 
           <TabsContent value="history" className="mt-6">
-            <HistoryView menus={menus} />
+            <HistoryView menus={menus} isLoading={isLoading} />
           </TabsContent>
 
           <TabsContent value="billing" className="mt-6">

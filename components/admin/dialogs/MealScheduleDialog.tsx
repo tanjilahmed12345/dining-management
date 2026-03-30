@@ -14,14 +14,16 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Save } from "lucide-react"
+import type { MenuItem } from "@/lib/types"
 import { toast } from "sonner"
-// import { toast } from "@/components/ui/use-toast"
 
-export function MealScheduleDialog({ open, onOpenChange, setMenus }: {
+interface MealScheduleDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  setMenus: React.Dispatch<React.SetStateAction<import("@/lib/data").MenuItem[]>>
-}) {
+  setMenus: React.Dispatch<React.SetStateAction<MenuItem[]>>
+}
+
+export function MealScheduleDialog({ open, onOpenChange, setMenus }: MealScheduleDialogProps) {
   const [mealSchedule, setMealSchedule] = useState<Record<string, string>>({
     Monday: "Chicken Roast",
     Tuesday: "Mutton",
@@ -32,16 +34,12 @@ export function MealScheduleDialog({ open, onOpenChange, setMenus }: {
     Sunday: "No meal scheduled",
   })
 
-  // Save meal schedule
   const saveMealSchedule = () => {
-    // In a real app, this would update the database
     onOpenChange(false)
 
-    // Update existing menu items based on their day of week
     setMenus((prev) =>
       prev.map((menu) => {
         if (menu.dayOfWeek && mealSchedule[menu.dayOfWeek]) {
-          // Only update if the day is in our schedule and it's not a custom menu
           const isDefaultMenu = [
             "Chicken Roast",
             "Mutton",
@@ -55,7 +53,6 @@ export function MealScheduleDialog({ open, onOpenChange, setMenus }: {
             const newMealType = mealSchedule[menu.dayOfWeek]
             let newDescription = ""
 
-            // Generate description based on meal type
             switch (newMealType) {
               case "Chicken Roast":
                 newDescription =
@@ -88,7 +85,7 @@ export function MealScheduleDialog({ open, onOpenChange, setMenus }: {
       }),
     )
 
-    toast("The weekly meal schedule has been updated successfully." )
+    toast("The weekly meal schedule has been updated successfully.")
   }
 
   return (
@@ -127,11 +124,11 @@ export function MealScheduleDialog({ open, onOpenChange, setMenus }: {
               <div className="flex items-center">
                 <Switch
                   id={`active-${day}`}
-                  checked={day !== "Friday" && day !== "Saturday" && day !== "Sunday"}
+                  checked={mealSchedule[day] !== "No meal scheduled"}
                   disabled={mealSchedule[day] === "No meal scheduled"}
                 />
                 <span className="ml-2 text-sm text-gray-400">
-                  {day !== "Friday" && day !== "Saturday" && day !== "Sunday" ? "On" : "Off"}
+                  {mealSchedule[day] !== "No meal scheduled" ? "On" : "Off"}
                 </span>
               </div>
             </div>
